@@ -8,7 +8,7 @@
   <ul>
     <li>
       <a herf="https://github.com/titoakapiticutzudegradina/UBB/tree/main/AN%202/Sem%201/Javra">
-        Advanced Methods of Programming 
+        :floppy_disk: Advanced Methods of Programming 
       </a> 
     </li>
   </ul>
