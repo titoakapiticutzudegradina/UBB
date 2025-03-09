@@ -1,0 +1,70 @@
+     1                                  bits 32 ; assembling for the 32 bits architecture
+     2                                  
+     3                                  ; declare the EntryPoint (a label defining the very first instruction of the program)
+     4                                  global start        
+     5                                  
+     6                                  ; declare external functions needed by our program
+     7                                  extern exit               ; tell nasm that exit exists even if we won't be defining it
+     8                                  import exit msvcrt.dll    ; exit is a function that ends the calling process. It is defined in msvcrt.dll
+     9                                                            ; msvcrt.dll contains exit, printf and all the other important C-runtime specific functions
+    10                                  
+    11                                  ; our data is declared here (the variables needed by our program)
+    12                                  extern scanf, printf
+    13                                  import scanf msvcrt.dll
+    14                                  import printf msvcrt.dll
+    15                                  segment data use32 class=data
+    16                                      ; ...
+    17 00000000 47697665206E722068-         startmsg db 'Give nr hexa:',0
+    17 00000009 6578613A00         
+    18 0000000E 257800                      formathexa db '%x',0
+    19 00000011 546865206E756D6265-         checkmsg db 'The number is: %d(b10) %x(b16)',0
+    19 0000001A 722069733A20256428-
+    19 00000023 623130292025782862-
+    19 0000002C 31362900           
+    20 00000030 54686520726573756C-         result db 'The result %d(b10), %x(b16)',0
+    20 00000039 742025642862313029-
+    20 00000042 2C2025782862313629-
+    20 0000004B 00                 
+    21 0000004C 00000000                    x dd 0
+    22 00000050 05000000                    k dd 5
+    23 00000054 00000000                    r dd 0
+    24                                  
+    25                                  ; our code starts here
+    26                                  segment code use32 class=code
+    27                                      start:
+    28                                          ; ...
+    29                                          ;print msg
+    30 00000000 68[00000000]                    push dword startmsg
+    31 00000005 FF15[00000000]                  call[printf]
+    32 0000000B 83C404                          add esp,4*1
+    33                                          
+    34                                          ;read number
+    35 0000000E 68[4C000000]                    push dword x
+    36 00000013 68[0E000000]                    push formathexa
+    37 00000018 FF15[00000000]                  call [scanf]
+    38 0000001E 83C408                          add esp, 4*2
+    39                                          
+    40                                          
+    41                                          ;checkmsg
+    42 00000021 FF35[4C000000]                  push dword[x]
+    43 00000027 FF35[4C000000]                  push dword[x]
+    44 0000002D 68[11000000]                    push dword checkmsg
+    45 00000032 FF15[00000000]                  call[printf]
+    46 00000038 83C40C                          add esp, 4*3
+    47                                          
+    48                                          ;compute
+    49 0000003B A1[4C000000]                    mov eax, [x]
+    50 00000040 8B1D[50000000]                  mov ebx, [k]
+    51 00000046 F7EB                            imul ebx
+    52 00000048 A3[54000000]                    mov dword[r],eax
+    53                                          
+    54                                          ;print the result
+    55 0000004D FF35[54000000]                  push dword[r]
+    56 00000053 FF35[54000000]                  push dword[r]
+    57 00000059 68[30000000]                    push result
+    58 0000005E FF15[00000000]                  call[printf]
+    59 00000064 83C40C                          add esp, 4*3
+    60                                          
+    61                                          ; exit(0)
+    62 00000067 6A00                            push    dword 0      ; push the parameter for exit onto the stack
+    63 00000069 FF15[00000000]                  call    [exit]       ; call exit to terminate the program

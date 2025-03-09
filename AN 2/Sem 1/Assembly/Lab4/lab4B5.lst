@@ -1,0 +1,49 @@
+     1                                  bits 32 ; assembling for the 32 bits architecture
+     2                                  
+     3                                  ; declare the EntryPoint (a label defining the very first instruction of the program)
+     4                                  global start        
+     5                                  
+     6                                  ; declare external functions needed by our program
+     7                                  extern exit               ; tell nasm that exit exists even if we won't be defining it
+     8                                  import exit msvcrt.dll    ; exit is a function that ends the calling process. It is defined in msvcrt.dll
+     9                                                            ; msvcrt.dll contains exit, printf and all the other important C-runtime specific functions
+    10                                  
+    11                                  ; our data is declared here (the variables needed by our program)
+    12                                  
+    13                                  ;A string of words S is given. Compute string D conatining only low bytes multiple of 9 from string S. If S = 3812h, 5678h, 1a09h => D = 12h, 09h
+    14                                  segment data use32 class=data
+    15                                      ; ...
+    16 00000000 12387856091A                s dw 3812h, 5678h, 1a09h
+    17                                      len equ ($-s)/2 ;the length of string s
+    18 00000006 00<rept>                    d times len db 0
+    19                                  
+    20                                  ; our code starts here
+    21                                  segment code use32 class=code
+    22                                      start:
+    23                                          ; ...
+    24 00000000 B903000000                      mov ecx, len
+    25 00000005 BE00000000                      mov esi, 0
+    26 0000000A BF00000000                      mov edi, 0
+    27                                          
+    28                                          repet:
+    29 0000000F 668B86[00000000]                        mov ax, [s + esi] ;we put an elem in ax
+    30 00000016 6698                                    cbw ; so we only take the low byte
+    31 00000018 B309                                    mov bl, 9
+    32 0000001A F6FB                                    idiv bl; in AH = remeinder
+    33 0000001C 80FC00                                  cmp ah, 0
+    34 0000001F 7402                                    JE yey ;we add the number
+    35 00000021 7513                                    JNE next ;we do not add the number
+    36                                                          yey: 
+    37 00000023 668B86[00000000]                                        mov ax, [s + esi]
+    38 0000002A 8887[06000000]                                          mov [d + edi], al
+    39 00000030 83C602                                                  add esi, 2
+    40 00000033 47                                                      inc edi
+    41 00000034 EB03                                                    jmp final
+    42                                                          next:
+    43 00000036 83C602                                              add esi, 2
+    44                                          final:
+    45 00000039 E2D4                            loop repet
+    46                                          
+    47                                          ; exit(0)
+    48 0000003B 6A00                            push    dword 0      ; push the parameter for exit onto the stack
+    49 0000003D FF15[00000000]                  call    [exit]       ; call exit to terminate the program

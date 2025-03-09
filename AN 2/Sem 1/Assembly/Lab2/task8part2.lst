@@ -1,0 +1,69 @@
+     1                                  bits 32 ; assembling for the 32 bits architecture
+     2                                  
+     3                                  ; declare the EntryPoint (a label defining the very first instruction of the program)
+     4                                  global start        
+     5                                  
+     6                                  ; declare external functions needed by our program
+     7                                  extern exit               ; tell nasm that exit exists even if we won't be defining it
+     8                                  import exit msvcrt.dll    ; exit is a function that ends the calling process. It is defined in msvcrt.dll
+     9                                                            ; msvcrt.dll contains exit, printf and all the other important C-runtime specific functions
+    10                                  
+    11                                  ; our data is declared here (the variables needed by our program)
+    12                                  segment data use32 class=data
+    13                                      ; ...1/a+200*b-c/(d+1)+x/a-e = 0+6314000-0+15290-100000 = 6229290
+    14                                      ;a,b -word c,d-byte e-double x-qword
+    15 00000000 BC7F                        a dw 32700;5
+    16 00000002 527B                        b dw 31570;2
+    17 00000004 78                          c db 120;10
+    18 00000005 7F                          d db 127;1
+    19 00000006 A0860100                    e dd 100000;15
+    20 0000000A 0065CD1D00000000            x dq 500000000;25
+    21 00000012 00000000                    aux dd 0
+    22 00000016 00000000                    r dd 0
+    23                                  
+    24                                  ; our code starts here
+    25                                  segment code use32 class=code
+    26                                      start:
+    27                                          ; we first compute 1/a RESULT IN EBX
+    28 00000000 66B80100                        mov ax, 1 ; AX = 1
+    29 00000004 6699                            cwd
+    30 00000006 66F73D[00000000]                idiv word[a]; AX = 1/5 = 0 quotient DX = 1/5 = 1 remeinder
+    31 0000000D 6689C3                          mov bx, ax ; BX = AX =0
+    32 00000010 0FBFDB                          movsx ebx, bx
+    33                                          
+    34                                          ;we compute 200*b RESULT IN aux
+    35 00000013 66B8C800                        mov ax, 200; AX = 200
+    36 00000017 66F72D[02000000]                imul word[b] ; DX:AX = 400;
+    37 0000001E 66A3[12000000]                  mov word[aux+0],ax ; 
+    38 00000024 668915[14000000]                mov word[aux+2],dx ; after this 2 commands we have aux = 400
+    39                                          
+    40                                          ;we compute d+1 RESULTS IN CL
+    41 0000002B 8A0D[05000000]                  mov cl, [d]; CL = d = 1
+    42 00000031 80C101                          add cl, 1; CL = d + 1 = 2
+    43                                          
+    44                                          ;we compute c /(d +1) RESULTS IN AX
+    45 00000034 A0[04000000]                    mov al, [c];
+    46 00000039 660FBEC0                        movsx ax, al; AX = AL = c = 10
+    47 0000003D F6F9                            idiv cl; AL = 5 quotient AH = 0 remeinder
+    48 0000003F 660FBEC0                        movsx ax, al ; AX = AL = 5
+    49                                          
+    50                                          ; we compute 1/a + 200*b - c/(d + 1) = 395 RESULT IN EBX
+    51 00000043 031D[12000000]                  add ebx, [aux] ; BX = 1/a + 200*b = 0 + 400 = 400
+    52 00000049 0FBFC0                          movsx eax, ax
+    53 0000004C 29C3                            sub ebx, eax ; BX = 400 - c/(d +1) = 400 - 5 = 395
+    54                                          
+    55                                          ;we compute x/a RESULTS IN EAX
+    56 0000004E A1[0A000000]                    mov eax, dword[x+ 0] ;EAX = first 4 bytes
+    57 00000053 8B15[0E000000]                  mov edx, dword[x+ 4] ;EDX = last 4 bytes
+    58 00000059 0FBF0D[00000000]                movsx ecx, word[a] ; ECX = a = 5
+    59 00000060 F7F9                            idiv ecx; EAX = 25/5 = 5 quotient EDX = 0 remeinder
+    60                                          
+    61                                          ;we get the final result 
+    62 00000062 01C3                            add ebx, eax; EBX = 395 + 5 =400
+    63 00000064 2B1D[06000000]                  sub ebx, [e] ; EBX = 400 - 15
+    64                                          
+    65 0000006A 891D[16000000]                  mov [r], ebx ; r = 385
+    66                                      
+    67                                          ; exit(0)
+    68 00000070 6A00                            push    dword 0      ; push the parameter for exit onto the stack
+    69 00000072 FF15[00000000]                  call    [exit]       ; call exit to terminate the program

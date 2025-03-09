@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="javafx-base-21-ea+24">
+    <ANNOTATIONS>
+      <root url="jar://$PROJECT_DIR$/src/lib/javafx-base-21-ea+24.jar!/" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/src/lib/javafx-base-21-ea+24.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/src/lib/javafx-base-21-ea+24.jar!/" />
+    </JAVADOC>
+    <NATIVE>
+      <root url="jar://$PROJECT_DIR$/src/lib/javafx-base-21-ea+24.jar!/" />
+    </NATIVE>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/src/lib/javafx-base-21-ea+24.jar!/" />
+    </SOURCES>
+    <jarDirectory url="jar://$PROJECT_DIR$/src/lib/javafx-base-21-ea+24.jar!/" recursive="false" />
+    <jarDirectory url="jar://$PROJECT_DIR$/src/lib/javafx-base-21-ea+24.jar!/" recursive="false" type="SOURCES" />
+  </library>
+</component>

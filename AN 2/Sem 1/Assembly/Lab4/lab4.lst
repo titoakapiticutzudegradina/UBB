@@ -1,0 +1,48 @@
+     1                                  bits 32 ; assembling for the 32 bits architecture
+     2                                  
+     3                                  ; declare the EntryPoint (a label defining the very first instruction of the program)
+     4                                  global start        
+     5                                  
+     6                                  ; declare external functions needed by our program
+     7                                  extern exit               ; tell nasm that exit exists even if we won't be defining it
+     8                                  import exit msvcrt.dll    ; exit is a function that ends the calling process. It is defined in msvcrt.dll
+     9                                                            ; msvcrt.dll contains exit, printf and all the other important C-runtime specific functions
+    10                                  
+    11                                  ; our data is declared here (the variables needed by our program)
+    12                                  
+    13                                  ;A8 A string of bytes A is given. Construct string B only conatining only odd values of A. If A = 17,4,2,-2,-1 => B = 17,-1 
+    14                                  segment data use32 class=data
+    15                                      ; ...
+    16 00000000 110402FEFF                  a db 17, 4, 2, -2, -1
+    17                                      len equ $-a; len = 5
+    18 00000005 00<rept>                    b times len db 0 
+    19                                  
+    20                                  ; our code starts here
+    21                                  segment code use32 class=code
+    22                                      start:
+    23                                          ; ...
+    24 00000000 B905000000                      mov ECX, len; the loop will be repeted len times
+    25 00000005 BE00000000                      mov esi, 0 ;basically esi = i    ;mov esi, a
+    26 0000000A BF00000000                      mov edi, 0 ; edi = j                   ;mov edi, b
+    27                                          
+    28                                          repet:
+    29 0000000F 8A86[00000000]                      mov al, [a+esi] ;an element from a   ;lodsb
+    30 00000015 6698                                cbw ; AX = AL for the division
+    31 00000017 B302                                mov bl, 2
+    32 00000019 F6FB                                idiv bl; in AL = quotient and in AH= 0/1
+    33 0000001B 80FC00                              cmp ah, 0
+    34 0000001E 7402                                JE not_add
+    35 00000020 7503                                JNE add_nr
+    36                                                  not_add:
+    37 00000022 46                                          inc esi
+    38 00000023 EB0E                                        jmp final
+    39                                                  add_nr:
+    40 00000025 8A86[00000000]                              mov al,[a+esi] ;bc we do not have the number:))
+    41 0000002B 8887[05000000]                              mov [b+edi], al ; we put the correct number in b
+    42 00000031 46                                          inc esi
+    43 00000032 47                                          inc edi
+    44                                          final:
+    45 00000033 E2DA                            loop repet
+    46                                          ; exit(0)
+    47 00000035 6A00                            push    dword 0      ; push the parameter for exit onto the stack
+    48 00000037 FF15[00000000]                  call    [exit]       ; call exit to terminate the program

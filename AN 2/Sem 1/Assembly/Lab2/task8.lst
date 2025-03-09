@@ -1,0 +1,54 @@
+     1                                  bits 32 ; assembling for the 32 bits architecture
+     2                                  
+     3                                  ; declare the EntryPoint (a label defining the very first instruction of the program)
+     4                                  global start        
+     5                                  
+     6                                  ; declare external functions needed by our program
+     7                                  extern exit               ; tell nasm that exit exists even if we won't be defining it
+     8                                  import exit msvcrt.dll    ; exit is a function that ends the calling process. It is defined in msvcrt.dll
+     9                                                            ; msvcrt.dll contains exit, printf and all the other important C-runtime specific functions
+    10                                  
+    11                                  ; our data is declared here (the variables needed by our program)
+    12                                  segment data use32 class=data
+    13                                      ; ...need to solve (100*a+d+5-75*b)/(c-5) first expresion (12700 + 3600+5-9450)/120 = 6855/120=57
+    14                                      ; a,b,c -byte d-word
+    15 00000000 7F                           a db 127
+    16 00000001 7E                           b db 126
+    17 00000002 7D                           c db 125
+    18 00000003 100E                         d dw 3600
+    19 00000005 00000000                     r dd 0
+    20                                      
+    21                                  ; our code starts here
+    22                                  segment code use32 class=code
+    23                                      start:
+    24                                          ; first we compute 100*a THIS RESULT IS IN BX
+    25 00000000 B064                            mov al, 100 ; AL = 100
+    26 00000002 F62D[00000000]                  imul byte[a] ; AX = 100*a = 100*2 = 200
+    27 00000008 6689C3                          mov bx, ax ; BX = AX =200
+    28                                  
+    29                                          ;we compute 75*b THIS RESULT IS IN AX
+    30 0000000B B04B                            mov al, 75 ; AL = 75
+    31 0000000D F62D[01000000]                  imul byte[b] ;AX = 75*b = 75*3 = 225
+    32                                          
+    33                                          ;we compute (100*a+d+5-75*b) THIS RESULT IS IN AX
+    34 00000013 66031D[03000000]                add bx,[d] ; BX = 100*a+d = 200 + 5 = 205
+    35 0000001A 6683C305                        add bx, 5; ;BX = 210;
+    36 0000001E 6629C3                          sub bx, ax; BX = -15
+    37 00000021 6689D8                          mov ax, bx ; AX = BX = -15
+    38                                          
+    39                                          ;we compute (c - 5) THIS RESULT IS IN BX
+    40 00000024 8A1D[02000000]                  mov bl,[c] ; BL = c = 6
+    41 0000002A 80EB05                          sub bl, 5; BL = c- 5 = 1
+    42 0000002D 660FBEDB                        movsx bx,bl; BX = 1
+    43                                          
+    44                                          ;we do the final division
+    45 00000031 6699                            cwd
+    46 00000033 66F7FB                          idiv bx ; AX = -15/1 = -15 DX = 0;
+    47 00000036 0FBFC0                          movsx eax, ax ; EAX = AX = -15
+    48 00000039 A3[05000000]                    mov [r], eax ; r = -15
+    49                                          
+    50                                        
+    51                                      
+    52                                          ; exit(0)
+    53 0000003E 6A00                            push    dword 0      ; push the parameter for exit onto the stack
+    54 00000040 FF15[00000000]                  call    [exit]       ; call exit to terminate the program

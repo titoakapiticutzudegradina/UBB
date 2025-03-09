@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="slf4j-api-2.0.9-javadoc1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/src/lib/slf4j-api-2.0.9-javadoc.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/src/lib/slf4j-api-2.0.9-javadoc.jar!/" />
+    </SOURCES>
+    <jarDirectory url="jar://$PROJECT_DIR$/src/lib/slf4j-api-2.0.9-javadoc.jar!/" recursive="false" />
+    <jarDirectory url="jar://$PROJECT_DIR$/src/lib/slf4j-api-2.0.9-javadoc.jar!/" recursive="false" type="SOURCES" />
+  </library>
+</component>

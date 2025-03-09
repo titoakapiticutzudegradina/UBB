@@ -1,0 +1,75 @@
+     1                                  bits 32 ; assembling for the 32 bits architecture
+     2                                  
+     3                                  ; declare the EntryPoint (a label defining the very first instruction of the program)
+     4                                  global start        
+     5                                  
+     6                                  ; declare external functions needed by our program
+     7                                  extern exit               ; tell nasm that exit exists even if we won't be defining it
+     8                                  import exit msvcrt.dll    ; exit is a function that ends the calling process. It is defined in msvcrt.dll
+     9                                                            ; msvcrt.dll contains exit, printf and all the other important C-runtime specific functions
+    10                                  
+    11                                  extern scanf, printf, gets
+    12                                  import scanf msvcrt.dll
+    13                                  import printf msvcrt.dll
+    14                                  import gets msvcrt.dll
+    15                                  
+    16                                  ; our data is declared here (the variables needed by our program)
+    17                                  ;Read a string. Extract all small characters and save them into a second string. Print the second string 
+    18                                  segment data use32 class=data
+    19 00000000 496E73657274206120-         msgstart db 'Insert a string of characters: ', 0
+    19 00000009 737472696E67206F66-
+    19 00000012 206368617261637465-
+    19 0000001B 72733A2000         
+    20 00000020 <res 00000014>              initialstring resb 20
+    21 00000034 257300                      fromatstring db '%s', 0
+    22 00000037 546865206E65772073-         printresult db 'The new string is: ',0
+    22 00000040 7472696E672069733A-
+    22 00000049 2000               
+    23 0000004B <res 00000014>              newstring resb 20
+    24                                   
+    25                                  
+    26                                  ; our code starts here
+    27                                  segment code use32 class=code
+    28                                      start:
+    29                                          ; print the initial msg
+    30 00000000 68[00000000]                    push msgstart
+    31 00000005 FF15[00000000]                  call [printf]
+    32 0000000B 83C404                          add esp, 4*1
+    33                                          
+    34                                          ;read the initial string
+    35 0000000E 68[20000000]                    push dword initialstring
+    36 00000013 FF15[00000000]                  call [gets]
+    37 00000019 83C404                          add esp, 4*1
+    38                                         
+    39                                         ;take the small characters from the string
+    40 0000001C B914000000                     mov ecx, 20 ; the max number of characters
+    41 00000021 BE00000000                     mov esi, 0
+    42 00000026 BF00000000                     mov edi,0
+    43                                         
+    44                                         repet:
+    45 0000002B 8A86[20000000]                      mov al, [initialstring + esi]
+    46 00000031 3C61                                cmp al , 'a'
+    47 00000033 7D02                                jnl probadd
+    48 00000035 7C0D                                jl final
+    49                                                  probadd:
+    50 00000037 3C7A                                         cmp al, 'z'
+    51 00000039 7E02                                         jle addchar
+    52 0000003B 7F07                                         jnle final
+    53                                                          addchar:
+    54 0000003D 8887[4B000000]                                      mov [newstring + edi], al
+    55 00000043 47                                                  inc edi
+    56                                                              ;inc esi
+    57                                                   final:
+    58 00000044 46                                          inc esi
+    59 00000045 E2E4                           loop repet
+    60                                         
+    61                                         ;print the result
+    62 00000047 68[37000000]                   push dword printresult
+    63 0000004C 68[4B000000]                   push dword newstring
+    64 00000051 FF15[00000000]                 call [printf]
+    65 00000057 83C408                         add esp, 4*2
+    66                                         
+    67                                          
+    68                                          ; exit(0)
+    69 0000005A 6A00                            push    dword 0      ; push the parameter for exit onto the stack
+    70 0000005C FF15[00000000]                  call    [exit]       ; call exit to terminate the program

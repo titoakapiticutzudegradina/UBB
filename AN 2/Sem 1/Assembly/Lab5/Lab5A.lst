@@ -1,0 +1,53 @@
+     1                                  bits 32 ; assembling for the 32 bits architecture
+     2                                  
+     3                                  ; declare the EntryPoint (a label defining the very first instruction of the program)
+     4                                  global start        
+     5                                  
+     6                                  ; declare external functions needed by our program
+     7                                  extern exit               ; tell nasm that exit exists even if we won't be defining it
+     8                                  import exit msvcrt.dll    ; exit is a function that ends the calling process. It is defined in msvcrt.dll
+     9                                                            ; msvcrt.dll contains exit, printf and all the other important C-runtime specific functions
+    10                                  
+    11                                  ; our data is declared here (the variables needed by our program)
+    12                                  extern scanf, printf
+    13                                  import scanf msvcrt.dll
+    14                                  import printf msvcrt.dll
+    15                                   
+    16                                   ;A negative number is given. Display the value of the number in base 10 and in base 16 in the following format "a = <base 10>(base 10), a= <base 16>(base 16)
+    17                                  segment data use32 class=data
+    18                                      ; ...
+    19 00000000 256400                      formatdecimal db '%d', 0
+    20 00000003 61203D202564202862-         printresult db 'a = %d (base 10), a = %x (base 16)',0
+    20 0000000C 617365203130292C20-
+    20 00000015 61203D202578202862-
+    20 0000001E 6173652031362900   
+    21 00000026 476976652061206E75-         msgstart db 'Give a number: ', 0
+    21 0000002F 6D6265723A2000     
+    22 00000036 00000000                    a dd 0
+    23                                  
+    24                                  ; our code starts here
+    25                                  segment code use32 class=code
+    26                                      start:
+    27                                          ; print the welcoming msg
+    28 00000000 68[26000000]                    push dword msgstart
+    29 00000005 FF15[00000000]                  call [printf]
+    30 0000000B 83C404                          add esp, 4*1
+    31                                          
+    32                                          ;read the negative number a
+    33 0000000E 68[36000000]                    push dword a
+    34 00000013 68[00000000]                    push formatdecimal
+    35 00000018 FF15[00000000]                  call [scanf]
+    36 0000001E 83C408                          add esp, 4*2
+    37                                          
+    38                                          ;print the result
+    39 00000021 FF35[36000000]                  push dword [a]
+    40 00000027 FF35[36000000]                  push dword [a]
+    41 0000002D 68[03000000]                    push printresult
+    42 00000032 FF15[00000000]                  call [printf]
+    43 00000038 83C40C                          add esp, 4*3
+    44                                          
+    45                                          
+    46                                      
+    47                                          ; exit(0)
+    48 0000003B 6A00                            push    dword 0      ; push the parameter for exit onto the stack
+    49 0000003D FF15[00000000]                  call    [exit]       ; call exit to terminate the program
